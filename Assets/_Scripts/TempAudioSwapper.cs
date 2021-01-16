@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class TempAudioSwapper : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class TempAudioSwapper : MonoBehaviour
     public AudioReverbFilter reverbds;
     public AudioSource defaultSource;
     public AudioReverbFilter reverbdef;
+
+    public TMP_Text textMesh;
 
 
 
@@ -17,6 +20,12 @@ public class TempAudioSwapper : MonoBehaviour
         {
             SwapSources();
         }
+
+
+        if (dsSource.enabled)
+            textMesh.text = "Dark Sound";
+        else
+            textMesh.text = "Unity Default";
     }
 
 
