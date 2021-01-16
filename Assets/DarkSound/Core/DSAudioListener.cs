@@ -9,9 +9,12 @@ namespace DarkSound
     {
         public static DSAudioListener Instance;
 
-        public DSRoom currentRoom; 
 
+        public DSRoom CurrentRoom {get{ return currentRoom;}}
+
+        private DSRoom currentRoom; 
         private List<DSRoom> allDSRooms = new List<DSRoom>();
+
 
         public void Awake()
         {
@@ -46,7 +49,7 @@ namespace DarkSound
         public DSRoom GetRoomForPosition(Vector3 worldPosition)
         {
             foreach (DSRoom dsRoom in allDSRooms)
-            {
+            { 
                 if (dsRoom.PositionIsInRoomBounds(worldPosition))
                 {
                     return dsRoom;
@@ -126,7 +129,7 @@ namespace DarkSound
             return RetracePath(startingNode.pathfindingNode, endNode.pathfindingNode);
         }
 
-        List<DSRoom> RetracePath(DSPathNode startNode, DSPathNode endNode)
+        private List<DSRoom> RetracePath(DSPathNode startNode, DSPathNode endNode)
         {
             List<DSRoom> path = new List<DSRoom>();
             DSPathNode currentNode = endNode;

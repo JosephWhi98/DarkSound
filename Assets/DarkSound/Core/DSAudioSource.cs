@@ -21,8 +21,8 @@ namespace DarkSound
         public float maxVolume;
         public LayerMask obstructionLayerMask;
 
-        Vector3 actualPosition;
-        Vector3 movedPosition;
+        private Vector3 actualPosition;
+        private Vector3 movedPosition;
 
         public void Awake()
         {
@@ -44,9 +44,12 @@ namespace DarkSound
             CalculatePropagation();
         }
 
+        /// <summary>
+        /// Calculates the propagation of audio from this source. The calculated values are then applied to the source to effect the audio. 
+        /// </summary>
         public void CalculatePropagation()
-        {
-            DSRoom currentPlayerRoom = DSAudioListener.Instance.currentRoom;
+        { 
+            DSRoom currentPlayerRoom = DSAudioListener.Instance.CurrentRoom;
 
             if (currentPlayerRoom == currentRoom)
             {
@@ -118,6 +121,11 @@ namespace DarkSound
 
         }
 
+        /// <summary>
+        /// Returns the maximum obstruction value, whether that be from the linecasts of the portals themselves. 
+        /// </summary>
+        /// <param name="portalObstruction"> Obstruction level given from portal traversal </param>
+        /// <returns> The maximum obstruction value </returns>
         public float GetObstruction(float portalObstruction)
         {
             float minLowPass = 300f;
@@ -132,6 +140,11 @@ namespace DarkSound
             return Mathf.Max(portalLowPass, rayLowPass);
         }
 
+
+        /// <summary>
+        /// Checks obstruction between listener and source. This value is calculated from 9 individual linecast values. 
+        /// </summary>
+        /// <returns>Returns a value between 0 and 1 to represent the amount of obstruction </returns>
         public float ObstructionCheck()
         {
             float numberOfRaysObstructed = 0; // Out of 9.
@@ -173,6 +186,13 @@ namespace DarkSound
             return obstructionPercentage;
         }
 
+
+        /// <summary>
+        /// Performs a linecast from point start to point end to check for obstructions. 
+        /// </summary>
+        /// <param name="start">Start position of linecast</param>
+        /// <param name="end">End position of linecast </param>
+        /// <returns> Returns value to represent obstruction, 1 == no obstruction, 0 == Obstructed </returns>
         private int ObstructionLinecast(Vector3 start, Vector3 end)
         {
             RaycastHit hit;
@@ -191,6 +211,10 @@ namespace DarkSound
             }
         }
 
+        ///<summary>
+        /// Checks and updated the current room position of the audioSource, if the source is dynamic this is checked and updated
+        /// each frame. 
+        ///</summary>
         public void CheckCurrentRoom()
         {
             if (isDynamic || currentRoom == null)
