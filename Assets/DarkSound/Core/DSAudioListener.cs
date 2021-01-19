@@ -46,6 +46,11 @@ namespace DarkSound
             }
         }
 
+        /// <summary>
+        /// Calculates the current room based on the given position
+        /// </summary>
+        /// <param name="worldPosition">Current position in world space</param>
+        /// <returns>The room that this position is in</returns>
         public DSRoom GetRoomForPosition(Vector3 worldPosition)
         {
             foreach (DSRoom dsRoom in allDSRooms)
@@ -59,6 +64,10 @@ namespace DarkSound
             return currentRoom;
         }
 
+        /// <summary>
+        /// Adds a room to the list of all rooms in the scene
+        /// </summary>
+        /// <param name="room">The room to add</param>
         public void AddRoom(DSRoom room)
         {
             if (allDSRooms == null)
@@ -69,6 +78,10 @@ namespace DarkSound
             allDSRooms.Add(room);
         }
 
+        /// <summary>
+        /// Removes a room from the list of all rooms in the scene
+        /// </summary>
+        /// <param name="room">The current room to remove</param>
         public void RemoveRoom(DSRoom room)
         {
             if (allDSRooms == null)
@@ -79,6 +92,22 @@ namespace DarkSound
             allDSRooms.Remove(room);
         }
 
+
+        /// <summary>
+        /// Clears the list of rooms. This needs to be called on scene load if the listener is persistent!
+        /// </summary>
+        public void ClearRoomList()
+        {
+            allDSRooms = new List<DSRoom>();
+        }
+
+
+        /// <summary>
+        /// Finds the optimal path from one specified room to another. 
+        /// </summary>
+        /// <param name="startingNode">Room to start path</param>
+        /// <param name="endNode">Room to end path</param>
+        /// <returns>A list of rooms that make up the optimal path</returns>
         public List<DSRoom> FindPath(DSRoom startingNode, DSRoom endNode)
         {
             DSHeap<DSPathNode> openSet = new DSHeap<DSPathNode>(allDSRooms.Count);
@@ -129,6 +158,12 @@ namespace DarkSound
             return RetracePath(startingNode.pathfindingNode, endNode.pathfindingNode);
         }
 
+        /// <summary>
+        /// Retraces through nodoes from final node to return the final path. 
+        /// </summary>
+        /// <param name="startNode">Node to start path</param>
+        /// <param name="endNode">Node to end path</param>
+        /// <returns>The optimal path from startNode to endNode</returns>
         private List<DSRoom> RetracePath(DSPathNode startNode, DSPathNode endNode)
         {
             List<DSRoom> path = new List<DSRoom>();
@@ -149,6 +184,9 @@ namespace DarkSound
 
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// Logs errors on validate. 
+        /// </summary>
         public void OnValidate()
         {
             if (!GetComponent<AudioListener>())

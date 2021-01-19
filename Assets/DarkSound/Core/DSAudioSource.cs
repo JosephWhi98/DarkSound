@@ -24,12 +24,18 @@ namespace DarkSound
         private Vector3 actualPosition;
         private Vector3 movedPosition;
 
+        [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode; 
+
         public void Awake()
         {
             audioSource = GetComponent<AudioSource>();
             audioLowPassFilter = GetComponent<AudioLowPassFilter>();
 
             actualPosition = transform.position;
+
+#if !UNITY_EDITOR
+            debugMode = false; 
+#endif
         }
 
         public void OnDisable()
@@ -77,7 +83,9 @@ namespace DarkSound
                     foreach (DSRoom.ConnectedRoom connection in previousRoom.connectedRooms)
                     {
                         if (room == connection.room)
+                        {
                             portals.Add(connection.portal);
+                        }
 
                         previousRoom = room;
                     }
@@ -91,7 +99,9 @@ namespace DarkSound
 
                 foreach (DSPortal v in portals)
                 {
-                    Debug.DrawLine(startPos, v.transform.position, Color.red);
+                    if(debugMode)
+                        Debug.DrawLine(startPos, v.transform.position, Color.red);
+
                     propagationDistance += Vector3.Distance(startPos, v.transform.position);
                     portalObstruction += v.GetAudioObstructionAmount();
                     startPos = v.transform.position;
@@ -104,9 +114,10 @@ namespace DarkSound
 
                 transform.position = Vector3.Lerp(transform.position, movedPosition, 15 * Time.deltaTime);
 
-                Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.red);
-                propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
+                if (debugMode)
+                    Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.red);
 
+                propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
                
 
@@ -114,7 +125,9 @@ namespace DarkSound
 
                 float lowPassCutOff = GetObstruction(portalObstruction);
 
-                Debug.Log(lowPassCutOff);
+                if (debugMode)
+                    Debug.Log(lowPassCutOff);
+
                 audioLowPassFilter.cutoffFrequency = Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 5 * Time.deltaTime);
 
             }
@@ -199,13 +212,15 @@ namespace DarkSound
 
             if (Physics.Linecast(start, end, out hit, obstructionLayerMask, QueryTriggerInteraction.Ignore))
             {
-                Debug.DrawLine(start, end, Color.red);
+                if (debugMode)
+                    Debug.DrawLine(start, end, Color.red);
 
                 return 1;
             }
             else
             {
-                Debug.DrawLine(start, end, Color.green);
+                if (debugMode)
+                    Debug.DrawLine(start, end, Color.green);
 
                 return 0;
             }
