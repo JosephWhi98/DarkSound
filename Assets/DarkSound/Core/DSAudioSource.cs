@@ -79,17 +79,28 @@ namespace DarkSound
 
                 foreach (DSRoom room in path)
                 {
-                    
+                    float bestPortalObstructionValue = float.MaxValue;
+                    DSPortal bestPortal = null; 
+
                     foreach (DSRoom.ConnectedRoom connection in previousRoom.connectedRooms)
                     {
                         if (room == connection.room)
                         {
-                            portals.Add(connection.portal);
-                        }
+                            float portalObstructionValue = connection.portal.GetAudioObstructionAmount();
 
-                        previousRoom = room;
+                            if (portalObstructionValue < bestPortalObstructionValue)
+                            {
+                                bestPortalObstructionValue = portalObstructionValue;
+                                bestPortal = connection.portal;
+                            }
+                        }
                     }
 
+                    if (bestPortal != null)
+                    {
+                        portals.Add(bestPortal);
+                    }
+                    previousRoom = room;
                 }
 
                 Vector3 startPos = actualPosition;
