@@ -28,6 +28,11 @@ namespace DarkSound
             }
         }
 
+        public void Start()
+        {
+            currentRoom = GetRoomForPosition(transform.position);
+        }
+
         public void Update()
         {
             currentRoom = GetRoomForPosition(transform.position);

@@ -43,10 +43,7 @@ namespace DarkSound
 
             pathfindingNode = new DSPathNode(transform.position);
             pathfindingNode.thisNode = this;
-        }
 
-        public void Start()
-        {
             if (DSAudioListener.Instance)
             {
                 DSAudioListener.Instance.AddRoom(this);
