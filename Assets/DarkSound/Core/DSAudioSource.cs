@@ -139,6 +139,8 @@ namespace DarkSound
                     movedPosition += v.transform.position;
                 }
 
+                portalObstruction = Mathf.Clamp01(portalObstruction);
+
                 movedPosition += DSAudioListener.Instance.transform.position;
 
                 movedPosition /= (2 + portals.Count);
@@ -156,9 +158,6 @@ namespace DarkSound
                 audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 5 * Time.deltaTime) : newVolume;
 
                 float lowPassCutOff = GetObstruction(portalObstruction);
-
-                if (debugMode)
-                    Debug.Log(lowPassCutOff);
 
                 audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 5 * Time.deltaTime) : lowPassCutOff;
 
@@ -178,11 +177,21 @@ namespace DarkSound
 
             float rayObstructionPercentage = ObstructionCheck();
 
-            float portalLowPass = maxLowPass - ((maxLowPass - minLowPass) * portalObstruction);
-            float rayLowPass = maxLowPass - ((maxLowPass - minLowPass) * (rayObstructionPercentage));
+
+            if (debugMode)
+            {
+                Debug.Log("Ray " + rayObstructionPercentage + " Portal " + portalObstruction);
+            }
 
 
-            return Mathf.Max(portalLowPass, rayLowPass);
+            if (portalObstruction < rayObstructionPercentage)
+            {
+                return maxLowPass - ((maxLowPass - minLowPass) * portalObstruction);
+            }
+            else
+            { 
+                return maxLowPass - ((maxLowPass - minLowPass) * (rayObstructionPercentage));
+            }
         }
 
 

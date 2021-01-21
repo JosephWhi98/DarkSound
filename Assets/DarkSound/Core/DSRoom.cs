@@ -8,6 +8,7 @@ namespace DarkSound
     [RequireComponent(typeof(BoxCollider))]
     public class DSRoom : MonoBehaviour
     {
+        [System.Serializable]
         public class ConnectedRoom
         {
             public DSPortal portal; 
@@ -27,6 +28,8 @@ namespace DarkSound
         public void Awake()
         {
             InitialiseRoom();
+
+            connectedRooms = new List<ConnectedRoom>();
         }
 
         /// <summary>

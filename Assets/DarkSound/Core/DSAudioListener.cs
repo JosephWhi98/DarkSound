@@ -183,7 +183,6 @@ namespace DarkSound
             }
             path.Reverse();
 
-            Debug.Log(cost);
             return path;
         }
 
