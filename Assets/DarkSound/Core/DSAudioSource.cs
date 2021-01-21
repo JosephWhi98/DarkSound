@@ -25,7 +25,8 @@ namespace DarkSound
 
         private Vector3 actualPosition;
         private Vector3 movedPosition;
-        
+
+        public bool useOwnSpatialisation; 
 
         [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode; 
 
@@ -61,6 +62,37 @@ namespace DarkSound
         {
             CheckCurrentRoom();
             CalculatePropagation();
+
+
+            if(useOwnSpatialisation)
+                CalculateSpatialisation();
+        }
+
+        public void CalculateSpatialisation()
+        {
+            float DotResult = Vector3.Dot(DSAudioListener.Instance.transform.right, (transform.position - DSAudioListener.Instance.transform.position).normalized);
+
+            float value = 0;
+
+            Debug.Log(DotResult);
+
+            if (DotResult > 0)
+            {
+                float perc = DotResult / 1f;
+
+                value = perc * 0.8f;
+            }
+            else if (DotResult < 0)
+            {
+                float perc = Mathf.Abs(DotResult) / 1f;
+
+                value = perc * -0.8f; 
+            }
+
+
+
+            audioSource.panStereo = Mathf.Lerp(audioSource.panStereo, value, 15 * Time.deltaTime); 
+
         }
 
         /// <summary>
@@ -68,14 +100,14 @@ namespace DarkSound
         /// </summary>
         public void CalculatePropagation(bool initialisationCall = false)
         { 
-            DSRoom currentPlayerRoom = DSAudioListener.Instance.CurrentRoom;
+            DSRoom currentListenerRoom = DSAudioListener.Instance.CurrentRoom;
 
-            if (!currentPlayerRoom) //General fail safe for if the player room isn't set. This should only be an issue during startup.
+            if (!currentListenerRoom) //General fail safe for if the Listener room isn't set. This should only be an issue during startup.
             {
-                currentPlayerRoom = DSAudioListener.Instance.GetRoomForPosition(DSAudioListener.Instance.transform.position);
+                currentListenerRoom = DSAudioListener.Instance.GetRoomForPosition(DSAudioListener.Instance.transform.position);
             }
 
-            if (currentPlayerRoom == currentRoom)
+            if (currentListenerRoom == currentRoom)
             {
                 audioLowPassFilter.cutoffFrequency = 5000f;
 
@@ -91,7 +123,7 @@ namespace DarkSound
             }
             else
             {
-                path = DSAudioListener.Instance.FindPath(currentRoom, currentPlayerRoom);
+                path = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
 
                 DSRoom previousRoom = currentRoom;
 
@@ -178,10 +210,6 @@ namespace DarkSound
             float rayObstructionPercentage = ObstructionCheck();
 
 
-            if (debugMode)
-            {
-                Debug.Log("Ray " + rayObstructionPercentage + " Portal " + portalObstruction);
-            }
 
 
             if (portalObstruction < rayObstructionPercentage)
@@ -203,37 +231,37 @@ namespace DarkSound
         {
             float numberOfRaysObstructed = 0; // Out of 9.
 
-            Vector3 playerToEmitterDirection = actualPosition - DSAudioListener.Instance.transform.position;
-            Vector3 emitterToPlayerDirection = DSAudioListener.Instance.transform.position - actualPosition;
+            Vector3 ListenerToEmitterDirection = actualPosition - DSAudioListener.Instance.transform.position;
+            Vector3 emitterToListenerDirection = DSAudioListener.Instance.transform.position - actualPosition;
 
-            Vector3 playerPosition = DSAudioListener.Instance.transform.position;
+            Vector3 ListenerPosition = DSAudioListener.Instance.transform.position;
 
             Vector3 emitterPosition = actualPosition;
 
-            Vector3 leftFromPlayerDirection = Vector3.Cross(playerToEmitterDirection, Vector3.up).normalized;
-            Vector3 leftFromPlayerPosition = DSAudioListener.Instance.transform.position + (leftFromPlayerDirection * 1f);
+            Vector3 leftFromListenerDirection = Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
+            Vector3 leftFromListenerPosition = DSAudioListener.Instance.transform.position + (leftFromListenerDirection * 1f);
 
-            Vector3 leftFromEmitterDirection = Vector3.Cross(emitterToPlayerDirection, Vector3.up).normalized;
+            Vector3 leftFromEmitterDirection = Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
             Vector3 leftFromEmitterPosition = actualPosition + (leftFromEmitterDirection * 1f);
 
-            Vector3 rightFromPlayerDirection = -Vector3.Cross(playerToEmitterDirection, Vector3.up).normalized;
-            Vector3 rightFromPlayerPosition = DSAudioListener.Instance.transform.position + (rightFromPlayerDirection * 1f);
+            Vector3 rightFromListenerDirection = -Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
+            Vector3 rightFromListenerPosition = DSAudioListener.Instance.transform.position + (rightFromListenerDirection * 1f);
 
-            Vector3 rightFromEmitterDirection = -Vector3.Cross(emitterToPlayerDirection, Vector3.up).normalized;
+            Vector3 rightFromEmitterDirection = -Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
             Vector3 rightFromEmitterPosition = actualPosition + (rightFromEmitterDirection * 1f);
 
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, playerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, ListenerPosition);
 
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, leftFromPlayerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, leftFromPlayerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, rightFromPlayerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, rightFromListenerPosition);
 
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, rightFromPlayerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, leftFromPlayerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, rightFromPlayerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, rightFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, rightFromListenerPosition);
 
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, playerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, playerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, ListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, ListenerPosition);
 
             float obstructionPercentage = numberOfRaysObstructed / 9;
 
