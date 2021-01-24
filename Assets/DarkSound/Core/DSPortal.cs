@@ -47,6 +47,11 @@ namespace DarkSound
             return obstructionAmount;
         }
 
+        public Vector3 GetClosestPointInBounds(Vector3 position)
+        {
+            return boundsCollider.ClosestPoint(position);
+        }
+
         /// <summary>
         /// Toggles this portal between open and closed states. 
         /// </summary>

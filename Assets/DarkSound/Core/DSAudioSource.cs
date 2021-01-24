@@ -181,15 +181,18 @@ namespace DarkSound
                 float portalObstruction = 0f;
                 movedPosition = actualPosition;
 
-                foreach (DSPortal v in portals)
+                foreach (DSPortal pathPortal in portals)
                 {
-                    if(debugMode)
-                        Debug.DrawLine(startPos, v.transform.position, Color.blue);
+                    Vector3 closestPointInBounds = pathPortal.GetClosestPointInBounds(startPos);
 
-                    propagationDistance += Vector3.Distance(startPos, v.transform.position) + (v.openCloseAmount * v.audioObstructionAmount * 15f);
-                    portalObstruction += v.GetAudioObstructionAmount();
-                    startPos = v.transform.position;
-                    movedPosition += v.transform.position;
+                    if (debugMode)
+                        Debug.DrawLine(startPos, closestPointInBounds, Color.blue);
+
+
+                    propagationDistance += Vector3.Distance(startPos, closestPointInBounds) + (pathPortal.openCloseAmount * pathPortal.audioObstructionAmount * 15f);
+                    portalObstruction += pathPortal.GetAudioObstructionAmount();
+                    startPos = closestPointInBounds;
+                    movedPosition += pathPortal.transform.position;
                 }
 
                 portalObstruction = Mathf.Clamp01(portalObstruction);
