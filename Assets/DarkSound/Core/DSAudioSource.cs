@@ -9,9 +9,7 @@ namespace DarkSound
     {
         private AudioSource audioSource;
         private AudioLowPassFilter audioLowPassFilter;
-        private DSRoom currentRoom;
-
-        public List<DSRoom> path;
+        public DSRoom currentRoom;
 
         [Header("General Settings")]
         [Tooltip("Will this audio source move around the scene?")] public bool isDynamic;
@@ -68,13 +66,15 @@ namespace DarkSound
                 CalculateSpatialisation();
         }
 
+        /// <summary>
+        /// Calculates the direction from the audioSource to the listener and uses this position to evaluate the stereo pan of the audio.
+        /// This is experimental and using the default 3D audio settings may be preferable based on the results. 
+        /// </summary>
         public void CalculateSpatialisation()
         {
             float DotResult = Vector3.Dot(DSAudioListener.Instance.transform.right, (transform.position - DSAudioListener.Instance.transform.position).normalized);
 
             float value = 0;
-
-            Debug.Log(DotResult);
 
             if (DotResult > 0)
             {
@@ -107,12 +107,18 @@ namespace DarkSound
                 currentListenerRoom = DSAudioListener.Instance.GetRoomForPosition(DSAudioListener.Instance.transform.position);
             }
 
-            if (currentListenerRoom == currentRoom)
+            if (currentListenerRoom == currentRoom) //Calculates propagation when the audioListener and the audioSource are in the same room.
             {
+                //TODO - Currently, audio played in the same room is 100% clear, this needs to be effected by the direct obstruction from the audio rays. 
+                
                 audioLowPassFilter.cutoffFrequency = 5000f;
 
                 float propagationDistance = Vector3.Distance(actualPosition, DSAudioListener.Instance.transform.position);
+
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
+
+
+                Debug.Log(propagationDistance + " " + (propagationDistance / maxDistance));
 
                 audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 5 * Time.deltaTime) : newVolume;
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, actualPosition, 15 * Time.deltaTime) : actualPosition;
@@ -123,13 +129,15 @@ namespace DarkSound
             }
             else
             {
-                path = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
+                //TODO - Clean up this code. 
+
+                List<DSRoom> optimalPath = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
 
                 DSRoom previousRoom = currentRoom;
 
                 List<DSPortal> portals = new List<DSPortal>();
 
-                foreach (DSRoom room in path)
+                foreach (DSRoom room in optimalPath)
                 {
                     float bestPortalObstructionValue = float.MaxValue;
                     DSPortal bestPortal = null; 
@@ -165,7 +173,7 @@ namespace DarkSound
                     if(debugMode)
                         Debug.DrawLine(startPos, v.transform.position, Color.red);
 
-                    propagationDistance += Vector3.Distance(startPos, v.transform.position);
+                    propagationDistance += Vector3.Distance(startPos, v.transform.position) + (v.openCloseAmount * v.audioObstructionAmount * 15f);
                     portalObstruction += v.GetAudioObstructionAmount();
                     startPos = v.transform.position;
                     movedPosition += v.transform.position;
@@ -177,21 +185,23 @@ namespace DarkSound
 
                 movedPosition /= (2 + portals.Count);
 
-                transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 15 * Time.deltaTime) : movedPosition;
+                transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 5 * Time.deltaTime) : movedPosition;
 
                 if (debugMode)
                     Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.red);
 
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
-
+               
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
+                
+                Debug.Log(propagationDistance + " " + (propagationDistance / maxDistance));
 
-                audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 5 * Time.deltaTime) : newVolume;
+                audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 2 * Time.deltaTime) : newVolume;
 
                 float lowPassCutOff = GetObstruction(portalObstruction);
 
-                audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 5 * Time.deltaTime) : lowPassCutOff;
+                audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 2 * Time.deltaTime) : lowPassCutOff;
 
             }
 

@@ -112,8 +112,9 @@ namespace DarkSound
         /// </summary>
         /// <param name="startingNode">Room to start path</param>
         /// <param name="endNode">Room to end path</param>
+        /// <param name="nonOptimalPath">When true the portal contrubution will not be considered.</param>
         /// <returns>A list of rooms that make up the optimal path</returns>
-        public List<DSRoom> FindPath(DSRoom startingNode, DSRoom endNode)
+        public List<DSRoom> FindPath(DSRoom startingNode, DSRoom endNode, bool nonOptimalPath = false)
         {
             DSHeap<DSPathNode> openSet = new DSHeap<DSPathNode>(allDSRooms.Count);
             HashSet<DSPathNode> closedSet = new HashSet<DSPathNode>();
@@ -135,7 +136,7 @@ namespace DarkSound
                     Vector3 endWorldTarget = (neighbour.thisNode == endNode) ? transform.position : neighbour.worldPosition;
                     Vector3 startWorldTarget = connectedRoom.portal.transform.position;
 
-                    float portalContribution = 10 * (connectedRoom.portal.openCloseAmount * connectedRoom.portal.audioObstructionAmount);
+                    float portalContribution = nonOptimalPath ? 0 : 10 * (connectedRoom.portal.openCloseAmount * connectedRoom.portal.audioObstructionAmount);
 
                     float newMovementCostToNeighbour = currentNode.gCost + Vector3.Distance(startWorldTarget, endWorldTarget) + portalContribution;
                    
@@ -175,7 +176,7 @@ namespace DarkSound
             DSPathNode currentNode = endNode;
             float cost = 0;
 
-            while (currentNode != startNode)
+            while (currentNode != startNode && currentNode != null)
             {
                 cost += currentNode.gCost;
                 path.Add(currentNode.thisNode);
