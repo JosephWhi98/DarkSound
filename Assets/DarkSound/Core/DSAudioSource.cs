@@ -125,7 +125,7 @@ namespace DarkSound
 
                 float lowPassCutOff = GetObstruction(0);
 
-                audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 5 * Time.deltaTime) : lowPassCutOff;
+                audioLowPassFilter.cutoffFrequency =  lowPassCutOff;
             }
             else
             {
@@ -184,7 +184,7 @@ namespace DarkSound
                 foreach (DSPortal v in portals)
                 {
                     if(debugMode)
-                        Debug.DrawLine(startPos, v.transform.position, Color.red);
+                        Debug.DrawLine(startPos, v.transform.position, Color.blue);
 
                     propagationDistance += Vector3.Distance(startPos, v.transform.position) + (v.openCloseAmount * v.audioObstructionAmount * 15f);
                     portalObstruction += v.GetAudioObstructionAmount();
@@ -201,7 +201,7 @@ namespace DarkSound
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 5 * Time.deltaTime) : movedPosition;
 
                 if (debugMode)
-                    Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.red);
+                    Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.blue);
 
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
@@ -233,7 +233,12 @@ namespace DarkSound
             float rayObstructionPercentage = ObstructionCheck();
 
 
+            float combinedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
 
+            Debug.Log("Combined Obstruction = " + combinedObstruction);
+
+
+            return maxLowPass - ((maxLowPass - minLowPass) * combinedObstruction);
 
             if (portalObstruction < rayObstructionPercentage)
             {
