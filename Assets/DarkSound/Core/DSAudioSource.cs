@@ -140,18 +140,31 @@ namespace DarkSound
                 foreach (DSRoom room in optimalPath)
                 {
                     float bestPortalObstructionValue = float.MaxValue;
-                    DSPortal bestPortal = null; 
+                    float closestDistanceToListener = float.MaxValue;
+                    DSPortal bestPortal = null;
+
 
                     foreach (DSRoom.ConnectedRoom connection in previousRoom.connectedRooms)
                     {
                         if (room == connection.room)
                         {
                             float portalObstructionValue = connection.portal.GetAudioObstructionAmount();
+                            float distanceTolistener = Vector3.Distance(connection.portal.transform.position, DSAudioListener.Instance.transform.position);
 
                             if (portalObstructionValue < bestPortalObstructionValue)
                             {
                                 bestPortalObstructionValue = portalObstructionValue;
+                                closestDistanceToListener = distanceTolistener;
                                 bestPortal = connection.portal;
+                            }
+                            else if (portalObstructionValue == bestPortalObstructionValue)
+                            {
+                                if (distanceTolistener < closestDistanceToListener)
+                                {
+                                    bestPortalObstructionValue = portalObstructionValue;
+                                    closestDistanceToListener = distanceTolistener;
+                                    bestPortal = connection.portal;
+                                }
                             }
                         }
                     }
