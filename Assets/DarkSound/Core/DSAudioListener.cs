@@ -148,6 +148,7 @@ namespace DarkSound
                         neighbour.hCost = Vector3.Distance(startWorldTarget, endWorldTarget) + portalContribution;
 
                         neighbour.parent = currentNode;
+                        neighbour.parentPortal = connectedRoom.portal;
 
                         if (!openSet.Contains(neighbour))
                             openSet.Add(neighbour);

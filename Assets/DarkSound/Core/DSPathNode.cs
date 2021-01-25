@@ -15,6 +15,7 @@ namespace DarkSound
         public float gCost;
         public float hCost;
         public DSRoom thisNode;
+        public DSPortal parentPortal;
         public DSPathNode parent;
         int heapIndex;
 
