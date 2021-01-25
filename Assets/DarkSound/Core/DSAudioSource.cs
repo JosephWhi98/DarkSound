@@ -107,6 +107,9 @@ namespace DarkSound
                 currentListenerRoom = DSAudioListener.Instance.GetRoomForPosition(DSAudioListener.Instance.transform.position);
             }
 
+            if (!currentRoom)
+                CheckCurrentRoom();
+
             if (currentListenerRoom == currentRoom) //Calculates propagation when the audioListener and the audioSource are in the same room.
             {
                 //TODO - Currently, audio played in the same room is 100% clear, this needs to be effected by the direct obstruction from the audio rays. 
@@ -192,14 +195,21 @@ namespace DarkSound
                     propagationDistance += Vector3.Distance(startPos, closestPointInBounds) + (pathPortal.openCloseAmount * pathPortal.audioObstructionAmount * 15f);
                     portalObstruction += pathPortal.GetAudioObstructionAmount();
                     startPos = closestPointInBounds;
-                    movedPosition += pathPortal.transform.position;
                 }
 
                 portalObstruction = Mathf.Clamp01(portalObstruction);
 
-                movedPosition += DSAudioListener.Instance.transform.position;
+                //movedPosition += DSAudioListener.Instance.transform.position;
 
-                movedPosition /= (2 + portals.Count);
+                //movedPosition /= (2 + portals.Count);
+
+
+                if (portals.Count >= 2)
+                    movedPosition = (portals[portals.Count - 1].transform.position + portals[portals.Count - 2].transform.position) / 2f;
+                else if (portals.Count >= 1)
+                    movedPosition = (portals[portals.Count - 1].transform.position + actualPosition) / 2f;
+                else
+                    movedPosition = actualPosition; 
 
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 5 * Time.deltaTime) : movedPosition;
 
