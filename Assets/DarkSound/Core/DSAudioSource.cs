@@ -132,6 +132,10 @@ namespace DarkSound
             {
                 //TODO - Clean up this code. 
 
+                //Optimise this, no need to perform these calculations on audioSources that arent playing, also if we cache the results we may be able to use the same path for multiple frames at a time.
+                //also, if theres a maximum direct range on the audio that can act as a cut off point for this calculation. This range would need to be bigger so that we still get the full benefit of the
+                //improved fall-off calculations.
+
                 List<DSRoom> optimalPath = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
 
                 DSRoom previousRoom = currentRoom;
@@ -236,6 +240,9 @@ namespace DarkSound
         /// <returns> The maximum obstruction value </returns>
         public float GetObstruction(float portalObstruction)
         {
+            //TODO - Find ways to optimise this, maybe alternate this so that it doesn't calculate every frame per audioSource. Also, if the range from the source is too far, it's likely that no value will be
+            //added by performing these raycasts rather than just using the pathfinding.
+
             float minLowPass = 300f;
             float maxLowPass = 5000f;
 
@@ -311,6 +318,10 @@ namespace DarkSound
         /// <returns> Returns value to represent obstruction, 1 == no obstruction, 0 == Obstructed </returns>
         private int ObstructionLinecast(Vector3 start, Vector3 end)
         {
+            //Potentially change this to use a raycastAll rather than linecast. Can more accurately propagate through walls etc, but will result in a significant performance hit. Additionally, this
+            //is already our largest performance drain. Could maybe use 9 linecasts + 1 direct raycastAll to reduce the hit of this, however it would increase set up complexity as to get the maximum benefit
+            // from this would require an additional script on wall collider to hold the properties of walls/materials. 
+
             RaycastHit hit;
 
             if (Physics.Linecast(start, end, out hit, obstructionLayerMask, QueryTriggerInteraction.Ignore))
