@@ -121,8 +121,6 @@ namespace DarkSound
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
 
 
-                Debug.Log(propagationDistance + " " + (propagationDistance / maxDistance));
-
                 audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 5 * Time.deltaTime) : newVolume;
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, actualPosition, 15 * Time.deltaTime) : actualPosition;
 
@@ -220,8 +218,6 @@ namespace DarkSound
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
                
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
-                
-                Debug.Log(propagationDistance + " " + (propagationDistance / maxDistance));
 
                 audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 2 * Time.deltaTime) : newVolume;
 
@@ -247,9 +243,6 @@ namespace DarkSound
 
 
             float combinedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
-
-            Debug.Log("Combined Obstruction = " + combinedObstruction);
-
 
             return maxLowPass - ((maxLowPass - minLowPass) * combinedObstruction);
 
