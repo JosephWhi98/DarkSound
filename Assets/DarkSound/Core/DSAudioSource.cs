@@ -7,7 +7,7 @@ namespace DarkSound
     [RequireComponent(typeof(AudioSource))]
     public class DSAudioSource : MonoBehaviour
     {
-        private AudioSource audioSource;
+        [HideInInspector] public AudioSource audioSource;
         private AudioLowPassFilter audioLowPassFilter;
         public DSRoom currentRoom;
 
@@ -24,9 +24,11 @@ namespace DarkSound
         private Vector3 actualPosition;
         private Vector3 movedPosition;
 
-        public bool useOwnSpatialisation; 
+        public bool useOwnSpatialisation;  
 
-        [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode; 
+        [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode;
+        [HideInInspector] public float debugDistance;
+        [HideInInspector] public float debugObstruction;
 
         public void Awake()
         {
@@ -127,6 +129,8 @@ namespace DarkSound
                 float lowPassCutOff = GetObstruction(0);
 
                 audioLowPassFilter.cutoffFrequency =  lowPassCutOff;
+
+                debugDistance = propagationDistance;
             }
             else
             {
@@ -229,6 +233,8 @@ namespace DarkSound
 
                 audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 2 * Time.deltaTime) : lowPassCutOff;
 
+                debugDistance = propagationDistance;
+
             }
 
         }
@@ -248,19 +254,12 @@ namespace DarkSound
 
             float rayObstructionPercentage = ObstructionCheck();
 
+            debugObstruction = 0.5f * (rayObstructionPercentage + portalObstruction); ;
 
             float combinedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
 
             return maxLowPass - ((maxLowPass - minLowPass) * combinedObstruction);
-
-            if (portalObstruction < rayObstructionPercentage)
-            {
-                return maxLowPass - ((maxLowPass - minLowPass) * portalObstruction);
-            }
-            else
-            { 
-                return maxLowPass - ((maxLowPass - minLowPass) * (rayObstructionPercentage));
-            }
+            
         }
 
 
