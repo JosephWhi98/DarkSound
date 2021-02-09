@@ -21,8 +21,10 @@ namespace DarkSound
             }
         }
 
-        private Collider[] boundsColliders;
-        public List<ConnectedRoom> connectedRooms = new List<ConnectedRoom>();
+        public Collider[] boundsColliders;
+
+        //Connections and pathfinding
+        [HideInInspector] public List<ConnectedRoom> connectedRooms = new List<ConnectedRoom>();
         public DSPathNode pathfindingNode;
 
         public void Awake()
@@ -53,14 +55,7 @@ namespace DarkSound
             }
         }
 
-        public void OnDisable()
-        {
-            if (DSAudioListener.Instance)
-            {
-                DSAudioListener.Instance.RemoveRoom(this);
-            }
-        }
-
+      
         /// <summary>
         /// Adds a connection from this room to another through a specified portal. 
         /// </summary>
@@ -112,6 +107,15 @@ namespace DarkSound
             }
 
             return null;
+        }
+
+
+        public void OnDisable()
+        {
+            if (DSAudioListener.Instance)
+            {
+                DSAudioListener.Instance.RemoveRoom(this);
+            }
         }
 
     }

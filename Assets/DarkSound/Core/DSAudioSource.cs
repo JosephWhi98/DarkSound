@@ -7,25 +7,31 @@ namespace DarkSound
     [RequireComponent(typeof(AudioSource))]
     public class DSAudioSource : MonoBehaviour
     {
-        [HideInInspector] public AudioSource audioSource;
-        private AudioLowPassFilter audioLowPassFilter;
-        public DSRoom currentRoom;
-
-        [Header("General Settings")]
+        [Header("Settings")]
         [Tooltip("Will this audio source move around the scene?")] public bool isDynamic;
         [Tooltip("Setting this value to true will enable propagation calculations on this audio source")] public bool usePropagation;
+
+        //Falloff
         [Tooltip("Use this instead of standard audio source falloff")] public AnimationCurve falloffCurve;
-        public float maxDistance;
-        public float maxVolume;
-        public LayerMask obstructionLayerMask;
+        [Tooltip("Maximum distance")] public float maxDistance;
+        [Tooltip("Volume at minimum distance")]public float maxVolume;
+        [Tooltip("Layers to use for audio obstruction")]public LayerMask obstructionLayerMask;
 
+        //General
         public bool playOnAwake;
+        public bool useOwnSpatialisation;
 
+
+        //Positioning
         private Vector3 actualPosition;
         private Vector3 movedPosition;
 
-        public bool useOwnSpatialisation;  
+        //Other
+        private AudioSource audioSource;
+        private AudioLowPassFilter audioLowPassFilter;
+        private DSRoom currentRoom;
 
+        //================/DEBUG/=================//
         [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode;
         [HideInInspector] public float debugDistance;
         [HideInInspector] public float debugObstruction;
@@ -42,22 +48,20 @@ namespace DarkSound
 #endif
         }
 
+
+        
         public void Start()
         {
             CheckCurrentRoom();
             CalculatePropagation(true);
-
+           
             if (playOnAwake)
             {
                 audioSource.Play();
             }
         }
 
-        public void OnDisable()
-        {
-            transform.position = actualPosition;
-        }
-
+   
         public void Update()
         {
             CheckCurrentRoom();
@@ -224,7 +228,7 @@ namespace DarkSound
 
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
-               
+              
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
 
                 audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 2 * Time.deltaTime) : newVolume;
@@ -350,6 +354,24 @@ namespace DarkSound
                 currentRoom = DSAudioListener.Instance.GetRoomForPosition(transform.position);
             }
         }
+
+
+        /// <summary>
+        /// Returns the attached audio source. 
+        /// </summary>
+        /// <returns>audioSource</returns>
+        public AudioSource GetAudioSource()
+        {
+            return audioSource; 
+        }
+
+
+        public void OnDisable()
+        {
+            transform.position = actualPosition;
+        }
+
+//====================/EDITOR/============================//
 
 #if UNITY_EDITOR
 

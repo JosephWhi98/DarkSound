@@ -9,11 +9,10 @@ namespace DarkSound
     {
         public static DSAudioListener Instance;
 
+        private List<DSRoom> allDSRooms = new List<DSRoom>();
 
         public DSRoom CurrentRoom {get{ return currentRoom;}}
-
-        private DSRoom currentRoom; 
-        private List<DSRoom> allDSRooms = new List<DSRoom>();
+        private DSRoom currentRoom;
 
 
         public void Awake()
@@ -188,6 +187,8 @@ namespace DarkSound
             return path;
         }
 
+
+        //====================/EDITOR/============================//
 
 #if UNITY_EDITOR
         /// <summary>

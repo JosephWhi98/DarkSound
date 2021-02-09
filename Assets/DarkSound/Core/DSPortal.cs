@@ -15,8 +15,6 @@ namespace DarkSound
         [Range(0, 1)] public float audioObstructionAmount;
 
         private Coroutine openCloseRoutine;
-
-
         private Collider boundsCollider;
 
         public bool opened = true;
@@ -47,6 +45,12 @@ namespace DarkSound
             return obstructionAmount;
         }
 
+
+        /// <summary>
+        /// Gets the closest point to a position within the bounds of the portal. 
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns>Vector3 - closest point to the given position with the portal bounds</returns>
         public Vector3 GetClosestPointInBounds(Vector3 position)
         {
             return boundsCollider.ClosestPoint(position);
