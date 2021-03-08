@@ -222,14 +222,20 @@ namespace DarkSound
                 //movedPosition += DSAudioListener.Instance.transform.position;
 
                 //movedPosition /= (2 + portals.Count);
+                if (portals.Count >= 1)
+                {
+                    Vector3 firstPosition = portals.Count > 1 ? portals[portals.Count - 2].transform.position : actualPosition;
+                    Vector3 secondPosition = portals[portals.Count - 1].transform.position;
 
+                    float panPercent = (Vector3.Distance(secondPosition, DSAudioListener.Instance.transform.position) / 20f);
+                    panPercent = Mathf.Clamp01(panPercent);
 
-                if (portals.Count >= 2)
-                    movedPosition = (portals[portals.Count - 1].transform.position + portals[portals.Count - 2].transform.position) / 2f;
-                else if (portals.Count >= 1)
-                    movedPosition = (portals[portals.Count - 1].transform.position + actualPosition) / 2f;
+                    movedPosition = firstPosition - (panPercent * (firstPosition - secondPosition));
+                }
                 else
-                    movedPosition = actualPosition; 
+                {
+                    movedPosition = actualPosition;
+                }
 
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 5 * Time.deltaTime) : movedPosition;
 
