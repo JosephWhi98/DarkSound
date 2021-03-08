@@ -16,7 +16,7 @@ public class DebugText : MonoBehaviour
 
 
         if (source.GetAudioSource().enabled)
-            text.text = "Falloff Volume: " + source.GetAudioSource().volume + "\nDistance: " + source.debugDistance + "\nObstruction: " + source.debugObstruction;
+            text.text = "Falloff Volume: " + source.GetAudioSource().volume + "\nDistance: " + source.cachedDistance + "\nObstruction: " + source.cachedObstruction;
         else
             text.text = "";
     }

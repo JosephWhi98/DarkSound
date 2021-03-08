@@ -10,16 +10,14 @@ namespace DarkSound
         [Header("Settings")]
         [Tooltip("Will this audio source move around the scene?")] public bool isDynamic;
         [Tooltip("Setting this value to true will enable propagation calculations on this audio source")] public bool usePropagation;
+        public bool playOnAwake;
+        public bool useOwnSpatialisation;
 
         //Falloff
         [Tooltip("Use this instead of standard audio source falloff")] public AnimationCurve falloffCurve;
         [Tooltip("Maximum distance")] public float maxDistance;
         [Tooltip("Volume at minimum distance")]public float maxVolume;
         [Tooltip("Layers to use for audio obstruction")]public LayerMask obstructionLayerMask;
-
-        //General
-        public bool playOnAwake;
-        public bool useOwnSpatialisation;
 
 
         //Positioning
@@ -30,11 +28,15 @@ namespace DarkSound
         private AudioSource audioSource;
         private AudioLowPassFilter audioLowPassFilter;
         private DSRoom currentRoom;
+        [HideInInspector] public float cachedObstruction;
+        [HideInInspector] public float cachedDistance;
+        private DSRoom cachedListenerRoom; 
+        private List<DSRoom> optimalPath;
+        private float nextUpdatePathTime; 
 
         //================/DEBUG/=================//
         [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode;
-        [HideInInspector] public float debugDistance;
-        [HideInInspector] public float debugObstruction;
+
 
         public void Awake()
         {
@@ -43,9 +45,7 @@ namespace DarkSound
 
             actualPosition = transform.position;
 
-#if !UNITY_EDITOR
-            debugMode = false; 
-#endif
+
         }
 
 
@@ -64,12 +64,25 @@ namespace DarkSound
    
         public void Update()
         {
-            CheckCurrentRoom();
-            CalculatePropagation();
+            if (audioSource.isPlaying)
+            {
+                bool updateSource = true;
+
+                if (cachedDistance > 0.8f * maxDistance)
+                {
+                    updateSource = (Time.frameCount % 5 == 0); //if distance is too far away, only update source values every 5 frames.
+                }
+
+                if (updateSource)
+                {
+                    CheckCurrentRoom();
+                    CalculatePropagation();
 
 
-            if(useOwnSpatialisation)
-                CalculateSpatialisation();
+                    if (useOwnSpatialisation)
+                        CalculateSpatialisation();
+                }
+            }
         }
 
         /// <summary>
@@ -78,7 +91,7 @@ namespace DarkSound
         /// </summary>
         public void CalculateSpatialisation()
         {
-            float DotResult = Vector3.Dot(DSAudioListener.Instance.transform.right, (transform.position - DSAudioListener.Instance.transform.position).normalized);
+            float DotResult = Vector3.Dot(Camera.main.transform.right, (transform.position - Camera.main.transform.position).normalized);
 
             float value = 0;
 
@@ -118,8 +131,6 @@ namespace DarkSound
 
             if (currentListenerRoom == currentRoom) //Calculates propagation when the audioListener and the audioSource are in the same room.
             {
-                //TODO - Currently, audio played in the same room is 100% clear, this needs to be effected by the direct obstruction from the audio rays. 
-                
                 audioLowPassFilter.cutoffFrequency = 5000f;
 
                 float propagationDistance = Vector3.Distance(actualPosition, DSAudioListener.Instance.transform.position);
@@ -134,17 +145,16 @@ namespace DarkSound
 
                 audioLowPassFilter.cutoffFrequency =  lowPassCutOff;
 
-                debugDistance = propagationDistance;
+                cachedDistance = propagationDistance;
             }
             else
             {
-                //TODO - Clean up this code. 
-
-                //Optimise this, no need to perform these calculations on audioSources that arent playing, also if we cache the results we may be able to use the same path for multiple frames at a time.
-                //also, if theres a maximum direct range on the audio that can act as a cut off point for this calculation. This range would need to be bigger so that we still get the full benefit of the
-                //improved fall-off calculations.
-
-                List<DSRoom> optimalPath = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
+                if (cachedListenerRoom != currentListenerRoom || Time.time > nextUpdatePathTime)
+                {
+                    optimalPath = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
+                    cachedListenerRoom = currentListenerRoom;
+                    nextUpdatePathTime = Time.time + Random.Range(0,1);
+                }
 
                 DSRoom previousRoom = currentRoom;
 
@@ -199,7 +209,7 @@ namespace DarkSound
                     Vector3 closestPointInBounds = pathPortal.GetClosestPointInBounds(startPos);
 
                     if (debugMode)
-                        Debug.DrawLine(startPos, closestPointInBounds, Color.blue);
+                        GLDebug.DrawLine(startPos, closestPointInBounds, Color.blue);
 
 
                     propagationDistance += Vector3.Distance(startPos, closestPointInBounds) + (pathPortal.openCloseAmount * pathPortal.audioObstructionAmount * 15f);
@@ -224,7 +234,7 @@ namespace DarkSound
                 transform.position = !initialisationCall ? Vector3.Lerp(transform.position, movedPosition, 5 * Time.deltaTime) : movedPosition;
 
                 if (debugMode)
-                    Debug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.blue);
+                    GLDebug.DrawLine(startPos, DSAudioListener.Instance.transform.position, Color.blue);
 
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
@@ -237,7 +247,7 @@ namespace DarkSound
 
                 audioLowPassFilter.cutoffFrequency = !initialisationCall ? Mathf.Lerp(audioLowPassFilter.cutoffFrequency, lowPassCutOff, 2 * Time.deltaTime) : lowPassCutOff;
 
-                debugDistance = propagationDistance;
+                cachedDistance = propagationDistance;
 
             }
 
@@ -247,22 +257,15 @@ namespace DarkSound
         /// Returns the maximum obstruction value, whether that be from the linecasts of the portals themselves. 
         /// </summary>
         /// <param name="portalObstruction"> Obstruction level given from portal traversal </param>
-        /// <returns> The maximum obstruction value </returns>
         public float GetObstruction(float portalObstruction)
         {
-            //TODO - Find ways to optimise this, maybe alternate this so that it doesn't calculate every frame per audioSource. Also, if the range from the source is too far, it's likely that no value will be
-            //added by performing these raycasts rather than just using the pathfinding.
-
             float minLowPass = 300f;
             float maxLowPass = 5000f;
 
-            float rayObstructionPercentage = ObstructionCheck();
+            float rayObstructionPercentage = Vector3.Distance(DSAudioListener.Instance.transform.position, actualPosition) > 20f ? 1 : ObstructionCheck();
 
-            debugObstruction = 0.5f * (rayObstructionPercentage + portalObstruction); ;
-
-            float combinedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
-
-            return maxLowPass - ((maxLowPass - minLowPass) * combinedObstruction);
+            cachedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
+            return maxLowPass - ((maxLowPass - minLowPass) * cachedObstruction);
             
         }
 
@@ -283,16 +286,16 @@ namespace DarkSound
             Vector3 emitterPosition = actualPosition;
 
             Vector3 leftFromListenerDirection = Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
-            Vector3 leftFromListenerPosition = DSAudioListener.Instance.transform.position + (leftFromListenerDirection * 1f);
+            Vector3 leftFromListenerPosition = DSAudioListener.Instance.transform.position + (leftFromListenerDirection * 0.25f);
 
             Vector3 leftFromEmitterDirection = Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
-            Vector3 leftFromEmitterPosition = actualPosition + (leftFromEmitterDirection * 1f);
+            Vector3 leftFromEmitterPosition = actualPosition + (leftFromEmitterDirection * 0.25f);
 
             Vector3 rightFromListenerDirection = -Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
-            Vector3 rightFromListenerPosition = DSAudioListener.Instance.transform.position + (rightFromListenerDirection * 1f);
+            Vector3 rightFromListenerPosition = DSAudioListener.Instance.transform.position + (rightFromListenerDirection * 0.25f);
 
             Vector3 rightFromEmitterDirection = -Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
-            Vector3 rightFromEmitterPosition = actualPosition + (rightFromEmitterDirection * 1f);
+            Vector3 rightFromEmitterPosition = actualPosition + (rightFromEmitterDirection * 0.25f);
 
             numberOfRaysObstructed += ObstructionLinecast(emitterPosition, ListenerPosition);
 
@@ -330,14 +333,15 @@ namespace DarkSound
             if (Physics.Linecast(start, end, out hit, obstructionLayerMask, QueryTriggerInteraction.Ignore))
             {
                 if (debugMode)
-                    Debug.DrawLine(start, end, Color.red);
+                    GLDebug.DrawLine(start, end, Color.red);
+               // Debug.DrawLine(start, end, Color.red);
 
                 return 1;
             }
             else
             {
                 if (debugMode)
-                    Debug.DrawLine(start, end, Color.green);
+                    GLDebug.DrawLine(start, end, Color.green);
 
                 return 0;
             }
