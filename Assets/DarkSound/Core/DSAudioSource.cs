@@ -12,6 +12,7 @@ namespace DarkSound
         [Tooltip("Setting this value to true will enable propagation calculations on this audio source")] public bool usePropagation;
         public bool playOnAwake;
         public bool useOwnSpatialisation;
+        public bool useDirectivity;
 
         //Falloff
         [Tooltip("Use this instead of standard audio source falloff")] public AnimationCurve falloffCurve;
@@ -81,6 +82,10 @@ namespace DarkSound
 
                     if (useOwnSpatialisation)
                         CalculateSpatialisation();
+
+
+
+
                 }
             }
         }
@@ -317,6 +322,19 @@ namespace DarkSound
             numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, ListenerPosition);
 
             float obstructionPercentage = numberOfRaysObstructed / 9;
+
+            if (useDirectivity) 
+            {
+                if (Vector3.Angle(transform.forward, emitterToListenerDirection) > 90)
+                {
+                    if (obstructionPercentage < 1)
+                    {
+                        obstructionPercentage += (1f / 9f);
+                        //Debug.Log(obstructionPercentage);
+                    }
+                }
+
+            }
 
             return obstructionPercentage;
         }
