@@ -140,6 +140,7 @@ namespace DarkSound
 
                 float propagationDistance = Vector3.Distance(actualPosition, DSAudioListener.Instance.transform.position);
 
+                Debug.Log(propagationDistance / maxDistance);
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
 
 
@@ -249,10 +250,12 @@ namespace DarkSound
 
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
-              
+
+
+                Debug.Log(propagationDistance / maxDistance);
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
 
-                audioSource.volume = !initialisationCall ? Mathf.Lerp(audioSource.volume, newVolume, 2 * Time.deltaTime) : newVolume;
+                audioSource.volume = newVolume;
 
                 float lowPassCutOff = GetObstruction(portalObstruction);
 
@@ -273,7 +276,7 @@ namespace DarkSound
             float minLowPass = 300f;
             float maxLowPass = 5000f;
 
-            float rayObstructionPercentage = Vector3.Distance(DSAudioListener.Instance.transform.position, actualPosition) > 20f ? 1 : ObstructionCheck();
+            float rayObstructionPercentage = /*Vector3.Distance(DSAudioListener.Instance.transform.position, actualPosition) > 20f ? 1 :*/ ObstructionCheck();
 
             cachedObstruction = 0.5f * (rayObstructionPercentage + portalObstruction);
             return maxLowPass - ((maxLowPass - minLowPass) * cachedObstruction);

@@ -13,13 +13,13 @@ public class Door : MonoBehaviour
 
     public void Awake()
     {
-        closedPosition = transform.position;
+        closedPosition = transform.localPosition;
     }
 
 
     public void Update()
     {
-        transform.position = closedPosition + ((1 - portal.openCloseAmount) * openOffset);
+        transform.localPosition = Vector3.Lerp(openOffset + closedPosition, closedPosition, portal.openCloseAmount);// closedPosition + ((1 - portal.openCloseAmount) * openOffset);
     }
 
 }

@@ -7,8 +7,8 @@ public class TestingManager : MonoBehaviour
 {
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            LoadScene("Menu");
+        //if (Input.GetKeyDown(KeyCode.Escape))
+        //    LoadScene("Menu");
 
         if(Input.GetKeyDown(KeyCode.F))
             Screen.fullScreen = !Screen.fullScreen;
