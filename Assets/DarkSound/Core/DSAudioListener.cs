@@ -5,27 +5,12 @@ using UnityEngine;
 
 namespace DarkSound
 {
-    public class DSAudioListener : MonoBehaviour
+    public class DSAudioListener : Singleton<DSAudioListener>
     {
-        public static DSAudioListener Instance;
-
         private List<DSRoom> allDSRooms = new List<DSRoom>();
 
         public DSRoom CurrentRoom {get{ return currentRoom;}}
         private DSRoom currentRoom;
-
-
-        public void Awake()
-        {
-            if (!Instance)
-            {
-                Instance = this;
-            }
-            else
-            {
-                enabled = false;
-            }
-        }
 
         public void Start()
         {
