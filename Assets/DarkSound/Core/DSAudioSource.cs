@@ -8,11 +8,11 @@ namespace DarkSound
     public class DSAudioSource : MonoBehaviour
     {
         [Header("Settings")]
-        [Tooltip("Will this audio source move around the scene?")] public bool isDynamic;
-        [Tooltip("Setting this value to true will enable propagation calculations on this audio source")] public bool usePropagation;
-        public bool playOnAwake;
-        public bool useOwnSpatialisation;
-        public bool useDirectivity;
+        [SerializeField, Tooltip("Will this audio source move around the scene?")] private bool isDynamic;
+        [SerializeField, Tooltip("Setting this value to true will enable propagation calculations on this audio source")] private bool usePropagation;
+        [SerializeField] private bool playOnAwake;
+        [SerializeField] private bool useOwnSpatialisation;
+        [SerializeField] private bool useDirectivity;
 
         //Falloff
         [Tooltip("Use this instead of standard audio source falloff")] public AnimationCurve falloffCurve;
