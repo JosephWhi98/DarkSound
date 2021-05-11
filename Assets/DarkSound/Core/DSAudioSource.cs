@@ -33,7 +33,8 @@ namespace DarkSound
         [HideInInspector] public float cachedDistance;
         private DSRoom cachedListenerRoom; 
         private List<DSRoom> optimalPath;
-        private float nextUpdatePathTime; 
+        private float nextUpdatePathTime;
+        public bool forceAlwaysUpdatePath; 
 
         //================/DEBUG/=================//
         [Tooltip("Should this source draw debug lines and log values to the console?"),SerializeField] public bool debugMode;
@@ -155,11 +156,12 @@ namespace DarkSound
             }
             else
             {
-                if (cachedListenerRoom != currentListenerRoom || Time.time > nextUpdatePathTime)
+                if (cachedListenerRoom != currentListenerRoom || Time.time > nextUpdatePathTime || forceAlwaysUpdatePath)
                 {
                     optimalPath = DSAudioListener.Instance.FindPath(currentRoom, currentListenerRoom);
                     cachedListenerRoom = currentListenerRoom;
                     nextUpdatePathTime = Time.time + Random.Range(0,1);
+                    Debug.Log("Updating path!");
                 }
 
                 DSRoom previousRoom = currentRoom;
@@ -389,7 +391,7 @@ namespace DarkSound
         {
             if (isDynamic || currentRoom == null)
             {
-                currentRoom = DSAudioListener.Instance.GetRoomForPosition(transform.position);
+                currentRoom = DSAudioListener.Instance.GetRoomForPosition(actualPosition);
             }
         }
 

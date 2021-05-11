@@ -120,7 +120,7 @@ namespace DarkSound
                     Vector3 endWorldTarget = (neighbour.thisNode == endNode) ? transform.position : neighbour.worldPosition;
                     Vector3 startWorldTarget = connectedRoom.portal.transform.position;
 
-                    float portalContribution = nonOptimalPath ? 0 : 10 * (connectedRoom.portal.openCloseAmount * connectedRoom.portal.audioObstructionAmount);
+                    float portalContribution = nonOptimalPath ? 0 : 15 * (connectedRoom.portal.GetAudioObstructionAmount());
 
                     float newMovementCostToNeighbour = currentNode.gCost + Vector3.Distance(startWorldTarget, endWorldTarget) + portalContribution;
                    
