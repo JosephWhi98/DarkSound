@@ -225,9 +225,6 @@ namespace DarkSound
 
                 portalObstruction = Mathf.Clamp01(portalObstruction);
 
-                //movedPosition += DSAudioListener.Instance.transform.position;
-
-                //movedPosition /= (2 + portals.Count);
                 if (portals.Count >= 1)
                 {
                     Vector3 firstPosition = portals.Count > 1 ? portals[portals.Count - 2].transform.position : actualPosition;
@@ -251,8 +248,6 @@ namespace DarkSound
                 propagationDistance += Vector3.Distance(startPos, DSAudioListener.Instance.transform.position);
                 propagationDistance = Mathf.Clamp(propagationDistance, 0, maxDistance);
 
-
-                Debug.Log(propagationDistance / maxDistance);
                 float newVolume = maxVolume * (falloffCurve.Evaluate(propagationDistance / maxDistance));
 
                 audioSource.volume = newVolume;

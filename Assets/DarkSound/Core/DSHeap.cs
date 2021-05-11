@@ -10,11 +10,28 @@ namespace DarkSound
         T[] items;
         int currentItemCount;
 
+        public int Count
+        {
+            get
+            {
+                return currentItemCount;
+            }
+        }
+
+        /// <summary>
+        /// Creates a heap of the specified size. 
+        /// </summary>
+        /// <param name="maxHeapSize"></param>
         public DSHeap(int maxHeapSize)
         {
             items = new T[maxHeapSize];
         }
 
+
+        /// <summary>
+        /// Adds a new item to the heap. 
+        /// </summary>
+        /// <param name="item"></param>
         public void Add(T item)
         {
             item.HeapIndex = currentItemCount;
@@ -23,6 +40,10 @@ namespace DarkSound
             currentItemCount++;
         }
 
+        /// <summary>
+        /// Removes the first item in the heap
+        /// </summary>
+        /// <returns>the first time in the heap</returns>
         public T RemoveFirst()
         {
             T firstItem = items[0];
@@ -33,41 +54,46 @@ namespace DarkSound
             return firstItem;
         }
 
+        /// <summary>
+        /// Updates item in the heap
+        /// </summary>
+        /// <param name="item"></param>
         public void UpdateItem(T item)
         {
             SortUp(item);
         }
 
-        public int Count
-        {
-            get
-            {
-                return currentItemCount;
-            }
-        }
-
+        /// <summary>
+        /// Checks if item is contained in the heap. 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>if item is contained in the heap</returns>
         public bool Contains(T item)
         {
             return Equals(items[item.HeapIndex], item);
         }
 
+        /// <summary>
+        /// Sorts the heap down.
+        /// </summary>
+        /// <param name="item"></param>
         void SortDown(T item)
         {
             while (true)
             {
-                int childIndexLeft = item.HeapIndex * 2 + 1;
-                int childIndexRight = item.HeapIndex * 2 + 2;
                 int swapIndex = 0;
+                int indexLeftChild = item.HeapIndex * 2 + 1;
+                int indexRightChild = item.HeapIndex * 2 + 2;
 
-                if (childIndexLeft < currentItemCount)
+                if (indexLeftChild < currentItemCount)
                 {
-                    swapIndex = childIndexLeft;
+                    swapIndex = indexLeftChild;
 
-                    if (childIndexRight < currentItemCount)
+                    if (indexRightChild < currentItemCount)
                     {
-                        if (items[childIndexLeft].CompareTo(items[childIndexRight]) < 0)
+                        if (items[indexLeftChild].CompareTo(items[indexRightChild]) < 0)
                         {
-                            swapIndex = childIndexRight;
+                            swapIndex = indexRightChild;
                         }
                     }
 
@@ -89,26 +115,33 @@ namespace DarkSound
             }
         }
 
+        /// <summary>
+        /// Sorts the heap up. 
+        /// </summary>
+        /// <param name="item"></param>
         void SortUp(T item)
         {
             int parentIndex = (item.HeapIndex - 1) / 2;
 
-            while (true)
+            while (parentIndex >= 0)
             {
                 T parentItem = items[parentIndex];
+
                 if (item.CompareTo(parentItem) > 0)
-                {
                     Swap(item, parentItem);
-                }
                 else
-                {
                     break;
-                }
 
                 parentIndex = (item.HeapIndex - 1) / 2;
             }
         }
 
+
+        /// <summary>
+        /// Swaps item A and B in the heap
+        /// </summary>
+        /// <param name="itemA"></param>
+        /// <param name="itemB"></param>
         void Swap(T itemA, T itemB)
         {
             items[itemA.HeapIndex] = itemB;
@@ -127,4 +160,5 @@ namespace DarkSound
             set;
         }
     }
+
 }

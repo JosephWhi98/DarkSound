@@ -25,14 +25,6 @@ namespace DarkSound
             worldPosition = _worldPos;
         }
 
-        public float fCost
-        {
-            get
-            {
-                return gCost + hCost;
-            }
-        }
-
         public int HeapIndex
         {
             get
@@ -44,6 +36,15 @@ namespace DarkSound
                 heapIndex = value;
             }
         }
+
+        public float fCost
+        {
+            get
+            {
+                return gCost + hCost;
+            }
+        }
+
 
         public int CompareTo(DSPathNode nodeToCompare)
         {
