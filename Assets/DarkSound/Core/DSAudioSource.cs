@@ -260,6 +260,18 @@ namespace DarkSound
 
             }
 
+
+            if (debugMode)
+            {
+                Color a = Color.yellow;
+                a.a = 0.5f;
+                GLDebug.DrawCube(actualPosition, Vector3.zero, Vector3.one/3f, a);
+
+                a = Color.magenta;
+                a.a = 0.5f;
+
+                GLDebug.DrawCube(transform.position, Vector3.zero, Vector3.one / 3f, a);
+            }
         }
 
         /// <summary>
