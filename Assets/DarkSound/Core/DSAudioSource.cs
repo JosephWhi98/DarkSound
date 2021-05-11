@@ -411,7 +411,7 @@ namespace DarkSound
             if (!audioSource)
             {
                 audioSource = GetComponent<AudioSource>();
-            }
+            } 
 
             if (audioSource.playOnAwake)
             {
