@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Demo1Video.unity
     guid: 936dbd33cf90b417f8abef4e74da65a1
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Demo2Video.unity
     guid: bf937a22d1878b64281fed967f761352
   m_configObjects: {}

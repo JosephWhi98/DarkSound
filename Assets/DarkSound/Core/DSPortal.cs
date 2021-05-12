@@ -57,6 +57,21 @@ namespace DarkSound
         }
 
         /// <summary>
+        /// Checks whether a specified world position is in the bounds of this portal. 
+        /// </summary>
+        /// <param name="worldPosition">The position to check</param>
+        /// <returns>Whether the specified position is within the bounds of this portal. </returns>
+        public bool PositionIsBounds(Vector3 worldPosition)
+        {
+            if (boundsCollider.bounds.Contains(worldPosition))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Toggles this portal between open and closed states. 
         /// </summary>
         public void ToggleOpenClose()

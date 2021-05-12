@@ -20,19 +20,6 @@ namespace DarkSound
         public void Update()
         {
             currentRoom = GetRoomForPosition(transform.position);
-
-
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                foreach (DSRoom.ConnectedRoom connection in currentRoom.connectedRooms)
-                {
-                    if (Vector3.Distance(connection.portal.transform.position, transform.position) < 3f)
-                    {
-                        connection.portal.ToggleOpenClose();
-                    }
-                }
-          
-            }
         }
 
         /// <summary>

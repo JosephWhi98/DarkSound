@@ -1,10 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro; 
 using UnityEngine.SceneManagement;
 
-public class TestingManager : MonoBehaviour
+public class TestingManager : Singleton<TestingManager>
 {
+    public TMP_Text interactText;
+
+    public List<Door> doors;
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -12,6 +17,24 @@ public class TestingManager : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.F))
             Screen.fullScreen = !Screen.fullScreen;
+
+        if(doors.Count > 0)
+            HandleInteract();
+    }
+
+    public void HandleInteract()
+    {
+        foreach (Door door in doors)
+        {
+            if (door.playerInRange)
+            {
+                interactText.text = "[E] to open/close door";
+
+                return;
+            }
+        }
+
+        interactText.text = "";
     }
 
 
