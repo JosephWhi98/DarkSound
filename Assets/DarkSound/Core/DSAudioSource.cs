@@ -13,6 +13,7 @@ namespace DarkSound
         [SerializeField] private bool playOnAwake;
         [SerializeField] private bool useOwnSpatialisation;
         [SerializeField] private bool useDirectivity;
+        [SerializeField] private float obstructionLeftRightScale = 0.25f;
 
         //Falloff
         [Tooltip("Use this instead of standard audio source falloff")] public AnimationCurve falloffCurve;
@@ -46,11 +47,7 @@ namespace DarkSound
             audioLowPassFilter = GetComponent<AudioLowPassFilter>();
 
             actualPosition = transform.position;
-
-
         }
-
-
         
         public void Start()
         {
@@ -83,10 +80,6 @@ namespace DarkSound
 
                     if (useOwnSpatialisation)
                         CalculateSpatialisation();
-
-
-
-
                 }
             }
         }
@@ -301,37 +294,30 @@ namespace DarkSound
         {
             float numberOfRaysObstructed = 0; // Out of 9.
 
-            Vector3 ListenerToEmitterDirection = actualPosition - DSAudioListener.Instance.transform.position;
-            Vector3 emitterToListenerDirection = DSAudioListener.Instance.transform.position - actualPosition;
+            Vector3 listenerPosition = DSAudioListener.Instance.transform.position;
+            Vector3 sourcePosition = actualPosition;
 
-            Vector3 ListenerPosition = DSAudioListener.Instance.transform.position;
+            Vector3 listenerToEmitterDirection = sourcePosition - listenerPosition;
+            Vector3 emitterToListenerDirection = listenerPosition - sourcePosition;
 
-            Vector3 emitterPosition = actualPosition;
+            Vector3 leftFromListenerDirection = Vector3.Cross(listenerToEmitterDirection, Vector3.up).normalized;
+            Vector3 leftFromListenerPosition = DSAudioListener.Instance.transform.position + (leftFromListenerDirection * obstructionLeftRightScale);
 
-            Vector3 leftFromListenerDirection = Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
-            Vector3 leftFromListenerPosition = DSAudioListener.Instance.transform.position + (leftFromListenerDirection * 0.25f);
+            Vector3 leftFromSourceDirection = Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
+            Vector3 leftFromSourcePosition = actualPosition + (leftFromSourceDirection * obstructionLeftRightScale);
 
-            Vector3 leftFromEmitterDirection = Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
-            Vector3 leftFromEmitterPosition = actualPosition + (leftFromEmitterDirection * 0.25f);
+            Vector3 rightFromListenerPosition = DSAudioListener.Instance.transform.position + (-leftFromListenerDirection * obstructionLeftRightScale);
+            Vector3 rightFromSourcePosition = actualPosition + (-leftFromSourceDirection * obstructionLeftRightScale);
 
-            Vector3 rightFromListenerDirection = -Vector3.Cross(ListenerToEmitterDirection, Vector3.up).normalized;
-            Vector3 rightFromListenerPosition = DSAudioListener.Instance.transform.position + (rightFromListenerDirection * 0.25f);
-
-            Vector3 rightFromEmitterDirection = -Vector3.Cross(emitterToListenerDirection, Vector3.up).normalized;
-            Vector3 rightFromEmitterPosition = actualPosition + (rightFromEmitterDirection * 0.25f);
-
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, ListenerPosition);
-
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, leftFromListenerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, leftFromListenerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, rightFromListenerPosition);
-
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, rightFromListenerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, leftFromListenerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(emitterPosition, rightFromListenerPosition);
-
-            numberOfRaysObstructed += ObstructionLinecast(leftFromEmitterPosition, ListenerPosition);
-            numberOfRaysObstructed += ObstructionLinecast(rightFromEmitterPosition, ListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(sourcePosition, listenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromSourcePosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromSourcePosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromSourcePosition, rightFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromSourcePosition, rightFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(sourcePosition, leftFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(sourcePosition, rightFromListenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(leftFromSourcePosition, listenerPosition);
+            numberOfRaysObstructed += ObstructionLinecast(rightFromSourcePosition, listenerPosition);
 
             float obstructionPercentage = numberOfRaysObstructed / 9;
 
@@ -364,13 +350,10 @@ namespace DarkSound
             //is already our largest performance drain. Could maybe use 9 linecasts + 1 direct raycastAll to reduce the hit of this, however it would increase set up complexity as to get the maximum benefit
             // from this would require an additional script on wall collider to hold the properties of walls/materials. 
 
-            RaycastHit hit;
-
-            if (Physics.Linecast(start, end, out hit, obstructionLayerMask, QueryTriggerInteraction.Ignore))
+            if (Physics.Linecast(start, end, out RaycastHit hit, obstructionLayerMask, QueryTriggerInteraction.Ignore))
             {
                 if (debugMode)
                     GLDebug.DrawLine(start, end, Color.red);
-               // Debug.DrawLine(start, end, Color.red);
 
                 return 1;
             }
