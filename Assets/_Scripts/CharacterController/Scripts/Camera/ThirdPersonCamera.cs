@@ -120,8 +120,8 @@ public class ThirdPersonCamera : MonoBehaviour
         movementSpeed.y = -y;
         if (!lockCamera)
         {
-            mouseY = Extensions.ClampAngle(mouseY, yMinLimit, yMaxLimit);
-            mouseX = Extensions.ClampAngle(mouseX, xMinLimit, xMaxLimit);
+            mouseY = Extensions.ClampAngleBetweenTwoPoints(mouseY, yMinLimit, yMaxLimit);
+            mouseX = Extensions.ClampAngleBetweenTwoPoints(mouseX, xMinLimit, xMaxLimit);
         }
         else
         {
