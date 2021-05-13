@@ -25,7 +25,7 @@ namespace DarkSound
             worldPosition = _worldPos;
         }
 
-        public int HeapIndex
+        public int index
         {
             get
             {

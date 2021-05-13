@@ -90,11 +90,11 @@ namespace DarkSound
             DSHeap<DSPathNode> openSet = new DSHeap<DSPathNode>(allDSRooms.Count);
             HashSet<DSPathNode> closedSet = new HashSet<DSPathNode>();
 
-            openSet.Add(startingNode.pathfindingNode);
+            openSet.AddItem(startingNode.pathfindingNode);
 
             while (openSet.Count > 0)
             {
-                DSPathNode currentNode = openSet.RemoveFirst();
+                DSPathNode currentNode = openSet.RemoveFirstItem();
                 closedSet.Add(currentNode);
 
                 foreach (DSRoom.ConnectedRoom connectedRoom in currentNode.thisNode.connectedRooms)
@@ -122,7 +122,7 @@ namespace DarkSound
                         neighbour.parentPortal = connectedRoom.portal;
 
                         if (!openSet.Contains(neighbour))
-                            openSet.Add(neighbour);
+                            openSet.AddItem(neighbour);
                     }
 
                 }

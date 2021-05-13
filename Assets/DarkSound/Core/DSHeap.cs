@@ -1,13 +1,11 @@
-using UnityEngine;
-using System.Collections;
 using System;
 
 namespace DarkSound
 {
-    public class DSHeap<T> where T : IHeapItem<T>
+	public class DSHeap<T> where T : IHeapItem<T>
     {
 
-        T[] items;
+        T[] heapItems;
         int currentItemCount;
 
         public int Count
@@ -21,10 +19,10 @@ namespace DarkSound
         /// <summary>
         /// Creates a heap of the specified size. 
         /// </summary>
-        /// <param name="maxHeapSize"></param>
-        public DSHeap(int maxHeapSize)
+        /// <param name="heapMaxSize"></param>
+        public DSHeap(int heapMaxSize)
         {
-            items = new T[maxHeapSize];
+            heapItems = new T[heapMaxSize];
         }
 
 
@@ -32,11 +30,11 @@ namespace DarkSound
         /// Adds a new item to the heap. 
         /// </summary>
         /// <param name="item"></param>
-        public void Add(T item)
+        public void AddItem(T item)
         {
-            item.HeapIndex = currentItemCount;
-            items[currentItemCount] = item;
-            SortUp(item);
+            item.index = currentItemCount;
+            heapItems[currentItemCount] = item;
+            SortHeapUp(item);
             currentItemCount++;
         }
 
@@ -44,24 +42,16 @@ namespace DarkSound
         /// Removes the first item in the heap
         /// </summary>
         /// <returns>the first time in the heap</returns>
-        public T RemoveFirst()
+        public T RemoveFirstItem()
         {
-            T firstItem = items[0];
+            T first = heapItems[0];
             currentItemCount--;
-            items[0] = items[currentItemCount];
-            items[0].HeapIndex = 0;
-            SortDown(items[0]);
-            return firstItem;
+            heapItems[0] = heapItems[currentItemCount];
+            heapItems[0].index = 0;
+            SortHeapDown(heapItems[0]);
+            return first;
         }
 
-        /// <summary>
-        /// Updates item in the heap
-        /// </summary>
-        /// <param name="item"></param>
-        public void UpdateItem(T item)
-        {
-            SortUp(item);
-        }
 
         /// <summary>
         /// Checks if item is contained in the heap. 
@@ -70,20 +60,20 @@ namespace DarkSound
         /// <returns>if item is contained in the heap</returns>
         public bool Contains(T item)
         {
-            return Equals(items[item.HeapIndex], item);
+            return Equals(heapItems[item.index], item);
         }
 
         /// <summary>
         /// Sorts the heap down.
         /// </summary>
         /// <param name="item"></param>
-        void SortDown(T item)
+        void SortHeapDown(T item)
         {
             while (true)
             {
                 int swapIndex = 0;
-                int indexLeftChild = item.HeapIndex * 2 + 1;
-                int indexRightChild = item.HeapIndex * 2 + 2;
+                int indexLeftChild = item.index * 2 + 1;
+                int indexRightChild = item.index * 2 + 2;
 
                 if (indexLeftChild < currentItemCount)
                 {
@@ -91,15 +81,15 @@ namespace DarkSound
 
                     if (indexRightChild < currentItemCount)
                     {
-                        if (items[indexLeftChild].CompareTo(items[indexRightChild]) < 0)
+                        if (heapItems[indexLeftChild].CompareTo(heapItems[indexRightChild]) < 0)
                         {
                             swapIndex = indexRightChild;
                         }
                     }
 
-                    if (item.CompareTo(items[swapIndex]) < 0)
+                    if (item.CompareTo(heapItems[swapIndex]) < 0)
                     {
-                        Swap(item, items[swapIndex]);
+                        SwapItems(item, heapItems[swapIndex]);
                     }
                     else
                     {
@@ -119,20 +109,20 @@ namespace DarkSound
         /// Sorts the heap up. 
         /// </summary>
         /// <param name="item"></param>
-        void SortUp(T item)
+        void SortHeapUp(T item)
         {
-            int parentIndex = (item.HeapIndex - 1) / 2;
+            int indexParent = (item.index - 1) / 2;
 
-            while (parentIndex >= 0)
+            while (indexParent >= 0)
             {
-                T parentItem = items[parentIndex];
+                T parent = heapItems[indexParent];
 
-                if (item.CompareTo(parentItem) > 0)
-                    Swap(item, parentItem);
+                if (item.CompareTo(parent) > 0)
+                    SwapItems(item, parent);
                 else
                     break;
 
-                parentIndex = (item.HeapIndex - 1) / 2;
+                indexParent = (item.index - 1) / 2;
             }
         }
 
@@ -140,21 +130,21 @@ namespace DarkSound
         /// <summary>
         /// Swaps item A and B in the heap
         /// </summary>
-        /// <param name="itemA"></param>
-        /// <param name="itemB"></param>
-        void Swap(T itemA, T itemB)
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        void SwapItems(T a, T b)
         {
-            items[itemA.HeapIndex] = itemB;
-            items[itemB.HeapIndex] = itemA;
-            int itemAIndex = itemA.HeapIndex;
-            itemA.HeapIndex = itemB.HeapIndex;
-            itemB.HeapIndex = itemAIndex;
+            heapItems[a.index] = b;
+            heapItems[b.index] = a;
+            int itemAIndex = a.index;
+            a.index = b.index;
+            b.index = itemAIndex;
         }
     }
 
     public interface IHeapItem<T> : IComparable<T>
     {
-        int HeapIndex
+        int index
         {
             get;
             set;
